@@ -4,23 +4,31 @@
  * Licensed under the MIT licence (http://opensource.org/licenses/mit-license.php)
  */
 
-import QtQuick 1.1
+import QtQuick 2.4
 import "jsonpath.js" as JSONPath
 
 Item {
     property string source: ""
+    property string method: "GET"
+    property string header: ""
+    property string params: ""
     property string json: ""
     property string query: ""
 
     property ListModel model : ListModel { id: jsonModel }
     property alias count: jsonModel.count
 
-    onSourceChanged: {
+    onHeaderChanged: sendRequest()
+    onSourceChanged: sendRequest()
+
+    function sendRequest(){
         var xhr = new XMLHttpRequest;
-        xhr.open("GET", source);
+        xhr.open(method, source);
+        xhr.setRequestHeader(header.split(": ")[0], header.split(": ")[1]);
         xhr.onreadystatechange = function() {
-            if (xhr.readyState == XMLHttpRequest.DONE)
+            if (xhr.readyState == XMLHttpRequest.DONE){
                 json = xhr.responseText;
+            }
         }
         xhr.send();
     }
@@ -45,7 +53,6 @@ Item {
         var objectArray = JSON.parse(jsonString);
         if ( jsonPathQuery !== "" )
             objectArray = JSONPath.jsonPath(objectArray, jsonPathQuery);
-
         return objectArray;
     }
 }
